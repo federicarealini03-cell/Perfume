@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scent Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f3ef;
+      --surface: #ffffff;
+      --text: #1a1a18;
+      --muted: #8a8880;
+      --accent: #3d6b5e;
+      --accent-light: #e8f0ed;
+      --border: #e2dfd8;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 3rem 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .brand {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .tagline {
+      margin-top: 0.6rem;
+      font-size: 0.82rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: var(--accent);
+      margin: 1.6rem auto 0;
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+    }
+
+    .card-image {
+      position: relative;
+      height: 300px;
+      overflow: hidden;
+    }
+
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .card:hover .card-image img {
+      transform: scale(1.05);
+    }
+
+    .badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: var(--accent);
+      color: white;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .card-info {
+      padding: 1.4rem 1.6rem 1.8rem;
+    }
+
+    .fragrance-notes {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 0.9rem;
+    }
+
+    .note-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    .product-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.45rem;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 0.35rem;
+    }
+
+    .product-desc {
+      font-size: 0.83rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.3rem;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .price {
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .price span {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 300;
+      margin-left: 2px;
+    }
+
+    .btn-add {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+
+    .btn-add:hover {
+      background: #2d5a4e;
+      transform: scale(1.03);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Loading & error states */
+    .state-message {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+      letter-spacing: 0.08em;
+    }
+
+    .state-message.error {
+      color: #c0392b;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .loading-dots span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin: 0 3px;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">Scent Studio</div>
+    <div class="tagline">Crafted for the modern senses</div>
+    <div class="divider"></div>
+  </header>
+
+  <main>
+    <div class="grid" id="product-grid">
+      <div class="state-message" style="grid-column: 1 / -1;">
+        <div class="loading-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <p style="margin-top: 1rem;">Loading products</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>Free shipping on orders over $120 &nbsp;·&nbsp; Scent Studio © 2026</footer>
+
+  <script>
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSzxZ7vf4F80AuResutQvq2UFlqQ_8EzItQhoSe-q0Bwt1lCirqqXdMsWSOjeAQ-qbzy2KA8mFG1-vw/pub?output=csv';
+
+    /**
+     * Minimal CSV parser that handles quoted fields (including commas inside quotes).
+     * Returns an array of objects keyed by the header row.
+     */
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length < 2) return [];
+
+      const headers = splitCSVRow(lines[0]).map(h => h.trim());
+
+      return lines.slice(1).map(line => {
+        const values = splitCSVRow(line);
+        const row = {};
+        headers.forEach((h, i) => {
+          row[h] = (values[i] || '').trim();
+        });
+        return row;
+      }).filter(row => Object.values(row).some(v => v !== ''));
+    }
+
+    function splitCSVRow(row) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < row.length; i++) {
+        const ch = row[i];
+        if (ch === '"') {
+          if (inQuotes && row[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === ',' && !inQuotes) {
+          result.push(current);
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current);
+      return result;
+    }
+
+    /**
+     * Build a single product card element from a data row.
+     * Expected columns: Name, Description, Price, Badge, Image, Notes
+     * "Notes" is a comma-separated list of fragrance note tags (optional).
+     */
+    function buildCard(product) {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      // --- Image section ---
+      const imageWrap = document.createElement('div');
+      imageWrap.className = 'card-image';
+
+      const img = document.createElement('img');
+      img.src = product['Image'] || '';
+      img.alt = product['Name'] || 'Product image';
+      imageWrap.appendChild(img);
+
+      const badgeText = product['Badge'] || '';
+      if (badgeText) {
+        const badge = document.createElement('div');
+        badge.className = 'badge';
+        badge.textContent = badgeText;
+        imageWrap.appendChild(badge);
+      }
+
+      // --- Info section ---
+      const info = document.createElement('div');
+      info.className = 'card-info';
+
+      // Fragrance notes (comma-separated in "Notes" column)
+      const notesRaw = product['Notes'] || '';
+      if (notesRaw) {
+        const notesWrap = document.createElement('div');
+        notesWrap.className = 'fragrance-notes';
+        notesRaw.split(',').forEach(note => {
+          const tag = document.createElement('span');
+          tag.className = 'note-tag';
+          tag.textContent = note.trim();
+          notesWrap.appendChild(tag);
+        });
+        info.appendChild(notesWrap);
+      }
+
+      const name = document.createElement('div');
+      name.className = 'product-name';
+      name.textContent = product['Name'] || '';
+      info.appendChild(name);
+
+      const desc = document.createElement('div');
+      desc.className = 'product-desc';
+      desc.textContent = product['Description'] || '';
+      info.appendChild(desc);
+
+      // Footer: price + button
+      const footer = document.createElement('div');
+      footer.className = 'card-footer';
+
+      const price = document.createElement('div');
+      price.className = 'price';
+      const priceValue = product['Price'] || '';
+      // Support formats like "$89 / 50ml", "$89", "89"
+      const parts = priceValue.split('/');
+      price.innerHTML = parts[0].trim() + (parts[1] ? ` <span>/ ${parts[1].trim()}</span>` : '');
+      footer.appendChild(price);
+
+      const btn = document.createElement('button');
+      btn.className = 'btn-add';
+      btn.textContent = 'Add to cart';
+      footer.appendChild(btn);
+
+      info.appendChild(footer);
+
+      card.appendChild(imageWrap);
+      card.appendChild(info);
+      return card;
+    }
+
+    async function loadProducts() {
+      const grid = document.getElementById('product-grid');
+
+      try {
+        const res = await fetch(CSV_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const csv = await res.text();
+        const products = parseCSV(csv);
+
+        grid.innerHTML = '';
+
+        if (products.length === 0) {
+          grid.innerHTML = '<div class="state-message" style="grid-column:1/-1">No products found in the spreadsheet.</div>';
+          return;
+        }
+
+        products.forEach(p => grid.appendChild(buildCard(p)));
+
+      } catch (err) {
+        console.error('Failed to load products:', err);
+        grid.innerHTML = `
+          <div class="state-message error" style="grid-column:1/-1">
+            Could not load products. Please check the spreadsheet URL or your connection.<br>
+            <small style="opacity:0.7;margin-top:0.5rem;display:block">${err.message}</small>
+          </div>`;
+      }
+    }
+
+    loadProducts();
+  </script>
+
+</body>
+</html>
